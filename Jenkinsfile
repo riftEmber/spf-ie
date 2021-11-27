@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         MAIN_BRANCH_NAME = 'main'
-        IMAGE_TAG_BASE = 'riftember/spf-ie'
+        IMAGE_TAG_BASE = 'registry.hub.docker.com/riftember/spf-ie'
         IMAGE_TAG_LATEST_NAME = 'latest'
     }
 
@@ -20,13 +20,13 @@ pipeline {
 
         stage('Build Docker image') {
             steps {
-                sh 'buildah bud -t ${IMAGE_TAG_BASE}:${BUILD_TAG} .'
+                sh 'podman build -t ${IMAGE_TAG_BASE}:${BUILD_TAG} .'
             }
         }
 
         stage('Push build-numbered image') {
             steps {
-                sh 'buildah push ${IMAGE_TAG_BASE}:${BUILD_TAG}'
+                sh 'podman push ${IMAGE_TAG_BASE}:${BUILD_TAG}'
             }
         }
 
@@ -35,19 +35,19 @@ pipeline {
                 branch "${MAIN_BRANCH_NAME}"
             }
             steps {
-                sh 'buildah tag ${IMAGE_TAG_BASE}:${BUILD_TAG} ${IMAGE_TAG_BASE}:${IMAGE_TAG_LATEST_NAME}'
-                sh 'buildah push ${IMAGE_TAG_BASE}:${IMAGE_TAG_LATEST_NAME}'
+                sh 'podman tag ${IMAGE_TAG_BASE}:${BUILD_TAG} ${IMAGE_TAG_BASE}:${IMAGE_TAG_LATEST_NAME}'
+                sh 'podman push ${IMAGE_TAG_BASE}:${IMAGE_TAG_LATEST_NAME}'
             }
             post {
                 always {
-                    sh 'buildah rmi ${IMAGE_TAG_BASE}:${IMAGE_TAG_LATEST_NAME}'
+                    sh 'podman rmi ${IMAGE_TAG_BASE}:${IMAGE_TAG_LATEST_NAME}'
                 }
             }
         }
 
         stage('Test image') {
             steps {
-                sh 'buildah run --rm ${IMAGE_TAG_BASE}:${BUILD_TAG} cmake --build build --target test'
+                sh 'podman run --rm ${IMAGE_TAG_BASE}:${BUILD_TAG} cmake --build build --target test'
             }
         }
 
@@ -55,7 +55,7 @@ pipeline {
 
     post {
         always {
-            sh 'buildah rmi ${IMAGE_TAG_BASE}:${BUILD_TAG}'
+            sh 'podman rmi ${IMAGE_TAG_BASE}:${BUILD_TAG}'
         }
     }
 }
