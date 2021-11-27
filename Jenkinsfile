@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         MAIN_BRANCH_NAME = 'main'
-        IMAGE_TAG_BASE = 'registry.hub.docker.com/riftember/spf-ie'
+        IMAGE_TAG_BASE = 'riftember/spf-ie'
         IMAGE_TAG_LATEST_NAME = 'latest'
     }
 
