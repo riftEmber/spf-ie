@@ -318,6 +318,37 @@ TEST_F(ComputationBuilderTest, basic_nesting) {
   expectComputationsEqual(computation, expectedComputation);
 }
 
+TEST_F(ComputationBuilderTest, complex_nesting) {
+  std::string code = \
+"int inner(int);\n"
+"\n"
+"int outer(void) {\n"
+"  int N = 5;\n"
+"  for (int i = 0; i < N; i++) {\n"
+"    int x = 3;\n"
+"    inner(x);\n"
+"  }\n"
+"  return 3;\n"
+"}\n"
+"\n"
+"int inner(int x) {\n"
+"  x*=5;\n"
+"  return x;\n"
+"}";
+
+  iegenlib::Computation *computation = buildComputationFromCode(code);
+
+  Computation *expectedComputation = new Computation("outer");
+  expectedComputation->addDataSpace("N", "int");
+
+  expectedComputation->addStmt(new iegenlib::Stmt("int N = 5;", "{[0]}", "{[0]->[0]}", {}, {{"N", "{[0]->[0]}"}}));
+
+  expectedComputation->addReturnValue("3", false);
+
+  expectComputationsEqual(computation, expectedComputation);
+}
+
+
 /** Death tests, checking failure on invalid input **/
 
 TEST_F(ComputationBuilderDeathTest, incorrect_increment_fails) {
